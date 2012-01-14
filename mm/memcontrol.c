@@ -2191,7 +2191,9 @@ again:
 		 * task-struct. So, mm->owner can be NULL.
 		 */
 		memcg = mem_cgroup_from_task(p);
-		if (!memcg || mem_cgroup_is_root(memcg)) {
+		if (!memcg)
+			memcg = root_mem_cgroup;
+		if (mem_cgroup_is_root(memcg)) {
 			rcu_read_unlock();
 			goto done;
 		}
