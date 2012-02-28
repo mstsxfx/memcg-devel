@@ -3811,7 +3811,6 @@ static u64 mem_cgroup_read(struct cgroup *cont, struct cftype *cft)
 		break;
 	default:
 		BUG();
-		break;
 	}
 	return val;
 }
