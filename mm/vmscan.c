@@ -1476,6 +1476,8 @@ static void shrink_active_list(unsigned long nr_to_scan,
 
 	lru_add_drain();
 
+	reset_reclaim_mode(sc);
+
 	if (!sc->may_unmap)
 		isolate_mode |= ISOLATE_UNMAPPED;
 	if (!sc->may_writepage)
@@ -2124,7 +2126,6 @@ static unsigned long do_try_to_free_pages(struct zonelist *zonelist,
 	unsigned long writeback_threshold;
 	bool aborted_reclaim;
 
-	get_mems_allowed();
 	delayacct_freepages_start();
 
 	if (global_reclaim(sc))
@@ -2188,7 +2189,6 @@ static unsigned long do_try_to_free_pages(struct zonelist *zonelist,
 
 out:
 	delayacct_freepages_end();
-	put_mems_allowed();
 
 	if (sc->nr_reclaimed)
 		return sc->nr_reclaimed;
@@ -2598,7 +2598,7 @@ loop_again:
 				testorder = 0;
 
 			if ((buffer_heads_over_limit && is_highmem_idx(i)) ||
-				    !zone_watermark_ok_safe(zone, order,
+				    !zone_watermark_ok_safe(zone, testorder,
 					high_wmark_pages(zone) + balance_gap,
 					end_zone, 0)) {
 				shrink_zone(priority, zone, &sc);
@@ -2727,7 +2727,8 @@ out:
 				continue;
 
 			/* Would compaction fail due to lack of free memory? */
-			if (compaction_suitable(zone, order) == COMPACT_SKIPPED)
+			if (COMPACTION_BUILD &&
+			    compaction_suitable(zone, order) == COMPACT_SKIPPED)
 				goto loop_again;
 
 			/* Confirm the zone is balanced for order-0 */

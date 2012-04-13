@@ -1447,6 +1447,8 @@ out:
 	/* Get the CMC error record and log it */
 	ia64_mca_log_sal_error_record(SAL_INFO_TYPE_CMC);
 
+	local_irq_disable();
+
 	return IRQ_HANDLED;
 }
 
@@ -1513,7 +1515,8 @@ static void
 ia64_mca_cmc_poll (unsigned long dummy)
 {
 	/* Trigger a CMC interrupt cascade  */
-	platform_send_ipi(first_cpu(cpu_online_map), IA64_CMCP_VECTOR, IA64_IPI_DM_INT, 0);
+	platform_send_ipi(cpumask_first(cpu_online_mask), IA64_CMCP_VECTOR,
+							IA64_IPI_DM_INT, 0);
 }
 
 /*
@@ -1589,7 +1592,8 @@ static void
 ia64_mca_cpe_poll (unsigned long dummy)
 {
 	/* Trigger a CPE interrupt cascade  */
-	platform_send_ipi(first_cpu(cpu_online_map), IA64_CPEP_VECTOR, IA64_IPI_DM_INT, 0);
+	platform_send_ipi(cpumask_first(cpu_online_mask), IA64_CPEP_VECTOR,
+							IA64_IPI_DM_INT, 0);
 }
 
 #endif /* CONFIG_ACPI */

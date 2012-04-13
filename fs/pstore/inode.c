@@ -52,12 +52,6 @@ struct pstore_private {
 	char	data[];
 };
 
-static int pstore_file_open(struct inode *inode, struct file *file)
-{
-	file->private_data = inode->i_private;
-	return 0;
-}
-
 static ssize_t pstore_file_read(struct file *file, char __user *userbuf,
 						size_t count, loff_t *ppos)
 {
@@ -67,7 +61,7 @@ static ssize_t pstore_file_read(struct file *file, char __user *userbuf,
 }
 
 static const struct file_operations pstore_file_operations = {
-	.open	= pstore_file_open,
+	.open	= simple_open,
 	.read	= pstore_file_read,
 	.llseek	= default_llseek,
 };
@@ -278,9 +272,7 @@ fail:
 
 int pstore_fill_super(struct super_block *sb, void *data, int silent)
 {
-	struct inode *inode = NULL;
-	struct dentry *root;
-	int err;
+	struct inode *inode;
 
 	save_mount_options(sb, data);
 
@@ -296,26 +288,17 @@ int pstore_fill_super(struct super_block *sb, void *data, int silent)
 	parse_options(data);
 
 	inode = pstore_get_inode(sb, NULL, S_IFDIR | 0755, 0);
-	if (!inode) {
-		err = -ENOMEM;
-		goto fail;
+	if (inode) {
+		/* override ramfs "dir" options so we catch unlink(2) */
+		inode->i_op = &pstore_dir_inode_operations;
 	}
-	/* override ramfs "dir" options so we catch unlink(2) */
-	inode->i_op = &pstore_dir_inode_operations;
-
-	root = d_alloc_root(inode);
-	sb->s_root = root;
-	if (!root) {
-		err = -ENOMEM;
-		goto fail;
-	}
+	sb->s_root = d_make_root(inode);
+	if (!sb->s_root)
+		return -ENOMEM;
 
 	pstore_get_records(0);
 
 	return 0;
-fail:
-	iput(inode);
-	return err;
 }
 
 static struct dentry *pstore_mount(struct file_system_type *fs_type,
