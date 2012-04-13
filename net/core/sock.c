@@ -111,7 +111,7 @@
 #include <linux/init.h>
 #include <linux/highmem.h>
 #include <linux/user_namespace.h>
-#include <linux/jump_label.h>
+#include <linux/static_key.h>
 #include <linux/memcontrol.h>
 
 #include <asm/uaccess.h>
@@ -184,7 +184,7 @@ void mem_cgroup_sockets_destroy(struct cgroup *cgrp)
 static struct lock_class_key af_family_keys[AF_MAX];
 static struct lock_class_key af_family_slock_keys[AF_MAX];
 
-struct jump_label_key memcg_socket_limit_enabled;
+struct static_key memcg_socket_limit_enabled;
 EXPORT_SYMBOL(memcg_socket_limit_enabled);
 
 /*
@@ -793,6 +793,17 @@ set_rcvbuf:
 		sock_valbool_flag(sk, SOCK_WIFI_STATUS, valbool);
 		break;
 
+	case SO_PEEK_OFF:
+		if (sock->ops->set_peek_off)
+			sock->ops->set_peek_off(sk, val);
+		else
+			ret = -EOPNOTSUPP;
+		break;
+
+	case SO_NOFCS:
+		sock_valbool_flag(sk, SOCK_NOFCS, valbool);
+		break;
+
 	default:
 		ret = -ENOPROTOOPT;
 		break;
@@ -1018,6 +1029,15 @@ int sock_getsockopt(struct socket *sock, int level, int optname,
 		v.val = !!sock_flag(sk, SOCK_WIFI_STATUS);
 		break;
 
+	case SO_PEEK_OFF:
+		if (!sock->ops->set_peek_off)
+			return -EOPNOTSUPP;
+
+		v.val = sk->sk_peek_off;
+		break;
+	case SO_NOFCS:
+		v.val = !!sock_flag(sk, SOCK_NOFCS);
+		break;
 	default:
 		return -ENOPROTOOPT;
 	}
@@ -2092,6 +2112,7 @@ void sock_init_data(struct socket *sock, struct sock *sk)
 
 	sk->sk_sndmsg_page	=	NULL;
 	sk->sk_sndmsg_off	=	0;
+	sk->sk_peek_off		=	-1;
 
 	sk->sk_peer_pid 	=	NULL;
 	sk->sk_peer_cred	=	NULL;
