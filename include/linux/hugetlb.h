@@ -238,6 +238,7 @@ struct hstate *size_to_hstate(unsigned long size);
 #define HUGE_MAX_HSTATE 1
 #endif
 
+extern int hugetlb_max_hstate;
 extern struct hstate hstates[HUGE_MAX_HSTATE];
 extern unsigned int default_hstate_idx;
 
@@ -313,6 +314,7 @@ static inline int hstate_index(struct hstate *h)
 
 #else
 struct hstate {};
+#define HUGE_MAX_HSTATE 0
 #define alloc_huge_page_node(h, nid) NULL
 #define alloc_bootmem_huge_page(h) NULL
 #define hstate_file(f) NULL
