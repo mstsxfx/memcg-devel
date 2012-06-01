@@ -12,7 +12,6 @@
 #define __MM_INTERNAL_H
 
 #include <linux/mm.h>
-#include <linux/memcontrol.h>
 
 void free_pgtables(struct mmu_gather *tlb, struct vm_area_struct *start_vma,
 		unsigned long floor, unsigned long ceiling);
@@ -135,22 +134,15 @@ static inline void munlock_vma_pages_all(struct vm_area_struct *vma)
 static inline int mlocked_vma_newpage(struct vm_area_struct *vma,
 				    struct page *page)
 {
-	bool locked;
-	unsigned long flags;
-
 	VM_BUG_ON(PageLRU(page));
 
 	if (likely((vma->vm_flags & (VM_LOCKED | VM_SPECIAL)) != VM_LOCKED))
 		return 0;
 
-	mem_cgroup_begin_update_page_stat(page, &locked, &flags);
 	if (!TestSetPageMlocked(page)) {
 		inc_zone_page_state(page, NR_MLOCK);
-		mem_cgroup_inc_page_stat(page, MEMCG_NR_MLOCK);
 		count_vm_event(UNEVICTABLE_PGMLOCKED);
 	}
-	mem_cgroup_end_update_page_stat(page, &locked, &flags);
-
 	return 1;
 }
 
@@ -172,13 +164,8 @@ extern void munlock_vma_page(struct page *page);
 extern void __clear_page_mlock(struct page *page);
 static inline void clear_page_mlock(struct page *page)
 {
-	bool locked;
-	unsigned long flags;
-
-	mem_cgroup_begin_update_page_stat(page, &locked, &flags);
 	if (unlikely(TestClearPageMlocked(page)))
 		__clear_page_mlock(page);
-	mem_cgroup_end_update_page_stat(page, &locked, &flags);
 }
 
 /*
@@ -187,11 +174,6 @@ static inline void clear_page_mlock(struct page *page)
  */
 static inline void mlock_migrate_page(struct page *newpage, struct page *page)
 {
-	/*
-	 * Here we are supposed to update the page memcg's mlock stat and the
-	 * newpage memcgs' mlock. Since the two pages are always being charged
-	 * to the same memcg there is no need for this.
-	 */
 	if (TestClearPageMlocked(page)) {
 		unsigned long flags;
 
