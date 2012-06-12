@@ -3994,7 +3994,7 @@ static ssize_t mem_cgroup_read(struct cgroup *cont, struct cftype *cft,
 		BUG();
 	}
 
-	len = snprintf(str, sizeof(str), "%llu\n", (unsigned long long)val);
+	len = scnprintf(str, sizeof(str), "%llu\n", (unsigned long long)val);
 	return simple_read_from_buffer(buf, nbytes, ppos, str, len);
 }
 /*
@@ -5097,14 +5097,14 @@ static void mem_cgroup_destroy(struct cgroup *cont)
 }
 
 #ifdef CONFIG_MEM_RES_CTLR_HUGETLB
-static char *mem_fmt(char *buf, int size, unsigned long hsize)
+static char *mem_fmt(char *buf, unsigned long n)
 {
-	if (hsize >= (1UL << 30))
-		snprintf(buf, size, "%luGB", hsize >> 30);
-	else if (hsize >= (1UL << 20))
-		snprintf(buf, size, "%luMB", hsize >> 20);
+	if (n >= (1UL << 30))
+		sprintf(buf, "%luGB", n >> 30);
+	else if (n >= (1UL << 20))
+		sprintf(buf, "%luMB", n >> 20);
 	else
-		snprintf(buf, size, "%luKB", hsize >> 10);
+		sprintf(buf, "%luKB", n >> 10);
 	return buf;
 }
 
@@ -5115,7 +5115,7 @@ int __init mem_cgroup_hugetlb_file_init(int idx)
 	struct hstate *h = &hstates[idx];
 
 	/* format the size */
-	mem_fmt(buf, 32, huge_page_size(h));
+	mem_fmt(buf, huge_page_size(h));
 
 	/* Add the limit file */
 	cft = &h->mem_cgroup_files[0];
