@@ -24,7 +24,7 @@ struct hugetlb_cgroup;
  */
 #define HUGETLB_CGROUP_MIN_ORDER	2
 
-#ifdef CONFIG_MEMCG_HUGETLB
+#ifdef CONFIG_CGROUP_HUGETLB
 
 static inline struct hugetlb_cgroup *hugetlb_cgroup_from_page(struct page *page)
 {
