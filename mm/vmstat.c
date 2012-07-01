@@ -767,7 +767,6 @@ const char * const vmstat_text[] = {
 	"compact_stall",
 	"compact_fail",
 	"compact_success",
-	"compact_rescued_unmovable_blocks",
 #endif
 
 #ifdef CONFIG_HUGETLB_PAGE

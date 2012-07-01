@@ -219,8 +219,9 @@ EXPORT_SYMBOL(nr_online_nodes);
 
 int page_group_by_mobility_disabled __read_mostly;
 
-void set_pageblock_migratetype(struct page *page, int migratetype)
+static void set_pageblock_migratetype(struct page *page, int migratetype)
 {
+
 	if (unlikely(page_group_by_mobility_disabled))
 		migratetype = MIGRATE_UNMOVABLE;
 
@@ -953,8 +954,8 @@ static int move_freepages(struct zone *zone,
 	return pages_moved;
 }
 
-int move_freepages_block(struct zone *zone, struct page *page,
-			 int migratetype)
+static int move_freepages_block(struct zone *zone, struct page *page,
+				int migratetype)
 {
 	unsigned long start_pfn, end_pfn;
 	struct page *start_page, *end_page;
@@ -5466,19 +5467,14 @@ void set_pageblock_flags_group(struct page *page, unsigned long flags,
 			__clear_bit(bitidx + start_bitidx, bitmap);
 }
 
-/**
- * __count_immobile_pages - Check pageblock for MIGRATE_UNMOVABLE type pages.
- * @zone: Zone pages are in.
- * @page: The first page in the pageblock.
- * @count: The count of allowed MIGRATE_UNMOVABLE type pages.
- *
- * Count the number of MIGRATE_UNMOVABLE type pages in the pageblock
- * starting with @page.  Returns true If the @zone is of ZONE_MOVABLE
- * type or the pageblock is of MIGRATE_MOVABLE or MIGRATE_CMA type.
- * If the number of MIGRATE_UNMOVABLE type pages inside the pageblock
- * is higher than given by @count returns false, true otherwise.
+/*
+ * This is designed as sub function...plz see page_isolation.c also.
+ * set/clear page block's type to be ISOLATE.
+ * page allocater never alloc memory from ISOLATE block.
  */
-bool __count_immobile_pages(struct zone *zone, struct page *page, int count)
+
+static int
+__count_immobile_pages(struct zone *zone, struct page *page, int count)
 {
 	unsigned long pfn, iter, found;
 	int mt;
@@ -5501,11 +5497,6 @@ bool __count_immobile_pages(struct zone *zone, struct page *page, int count)
 			continue;
 
 		page = pfn_to_page(check);
-
-		/* Do not deal with pageblocks that overlap zones */
-		if (page_zone(page) != zone)
-			return false;
-
 		if (!page_count(page)) {
 			if (PageBuddy(page))
 				iter += (1 << page_order(page)) - 1;
@@ -5660,7 +5651,7 @@ static int __alloc_contig_migrate_range(unsigned long start, unsigned long end)
 		.nr_migratepages = 0,
 		.order = -1,
 		.zone = page_zone(pfn_to_page(start)),
-		.mode = COMPACT_SYNC,
+		.sync = true,
 	};
 	INIT_LIST_HEAD(&cc.migratepages);
 
