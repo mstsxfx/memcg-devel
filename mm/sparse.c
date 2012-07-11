@@ -275,9 +275,8 @@ static unsigned long * __init
 sparse_early_usemaps_alloc_pgdat_section(struct pglist_data *pgdat,
 					 unsigned long size)
 {
-	unsigned long goal, limit;
-	unsigned long *p;
-	int nid;
+	pg_data_t *host_pgdat;
+	unsigned long goal;
 	/*
 	 * A page may contain usemaps for other sections preventing the
 	 * page being freed and making a section unremovable while
@@ -288,19 +287,10 @@ sparse_early_usemaps_alloc_pgdat_section(struct pglist_data *pgdat,
 	 * from the same section as the pgdat where possible to avoid
 	 * this problem.
 	 */
-	goal = __pa(pgdat) & (PAGE_SECTION_MASK << PAGE_SHIFT);
-	limit = goal + (1UL << PA_SECTION_SHIFT);
-	nid = early_pfn_to_nid(goal >> PAGE_SHIFT);
-
-again:
-	p = ___alloc_bootmem_node_nopanic(NODE_DATA(nid), size,
-					  SMP_CACHE_BYTES, goal, limit);
-	if (!p && limit) {
-		limit = 0;
-		goto again;
-	}
-
-	return p;
+	goal = __pa(pgdat) & PAGE_SECTION_MASK;
+	host_pgdat = NODE_DATA(early_pfn_to_nid(goal >> PAGE_SHIFT));
+	return __alloc_bootmem_node_nopanic(host_pgdat, size,
+					    SMP_CACHE_BYTES, goal);
 }
 
 static void __init check_usemap_section_nr(int nid, unsigned long *usemap)
