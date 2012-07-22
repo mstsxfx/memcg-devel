@@ -402,8 +402,6 @@ static void ixgbevf_alloc_rx_buffers(struct ixgbevf_adapter *adapter,
 			 * the 14 byte MAC header is removed
 			 */
 			skb_reserve(skb, NET_IP_ALIGN);
-
-			skb_propagate_pfmemalloc(bi->page, skb);
 			bi->skb = skb;
 		}
 		if (!bi->dma) {
