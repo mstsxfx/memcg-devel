@@ -1338,7 +1338,7 @@ static unsigned long shmem_interleave(struct vm_area_struct *vma,
 	unsigned long offset;
 
 	/* Use the vm_files prefered node as the initial offset. */
-	offset = (unsigned long *) vma->vm_private_data;
+	offset = (unsigned long)vma->vm_private_data;
 
 	offset += ((addr - vma->vm_start) >> PAGE_SHIFT) + vma->vm_pgoff;
 
