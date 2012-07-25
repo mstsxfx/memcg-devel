@@ -361,6 +361,7 @@ static struct task_struct *select_bad_process(unsigned int *ppoints,
 		case OOM_SCAN_CONTINUE:
 			continue;
 		case OOM_SCAN_ABORT:
+			rcu_read_unlock();
 			return ERR_PTR(-1UL);
 		case OOM_SCAN_OK:
 			break;
