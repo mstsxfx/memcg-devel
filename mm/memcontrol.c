@@ -1386,20 +1386,20 @@ static void mem_cgroup_print_oom_stat(struct mem_cgroup *memcg)
 	int i;
 	struct mem_cgroup *mi;
 
-	printk(KERN_INFO "Memory cgroup stat:\n");
+	pr_info("Memory cgroup stat:\n");
 	for (i = 0; i < MEM_CGROUP_STAT_NSTATS; i++) {
 		if (i == MEM_CGROUP_STAT_SWAP && !do_swap_account)
 			continue;
-		printk(KERN_CONT "%s:%ldKB ", mem_cgroup_stat_names[i],
+		pr_cont("%s:%ldKB ", mem_cgroup_stat_names[i],
 			   K(mem_cgroup_read_stat(memcg, i)));
 	}
 
 	for (i = 0; i < MEM_CGROUP_EVENTS_NSTATS; i++)
-		printk(KERN_CONT "%s:%lu ", mem_cgroup_events_names[i],
+		pr_cont("%s:%lu ", mem_cgroup_events_names[i],
 			   mem_cgroup_read_events(memcg, i));
 
 	for (i = 0; i < NR_LRU_LISTS; i++)
-		printk(KERN_CONT "%s:%luKB ", mem_cgroup_lru_names[i],
+		pr_cont("%s:%luKB ", mem_cgroup_lru_names[i],
 			   K(mem_cgroup_nr_lru_pages(memcg, BIT(i))));
 
 	/* Dump the total statistics if hierarchy is enabled. */
@@ -1410,7 +1410,7 @@ static void mem_cgroup_print_oom_stat(struct mem_cgroup *memcg)
 			continue;
 		for_each_mem_cgroup_tree(mi, memcg)
 			val += mem_cgroup_read_stat(mi, i);
-		printk(KERN_CONT "total_%s:%lldKB ", mem_cgroup_stat_names[i], K(val));
+		pr_cont("total_%s:%lldKB ", mem_cgroup_stat_names[i], K(val));
 	}
 
 	for (i = 0; i < MEM_CGROUP_EVENTS_NSTATS; i++) {
@@ -1418,7 +1418,7 @@ static void mem_cgroup_print_oom_stat(struct mem_cgroup *memcg)
 
 		for_each_mem_cgroup_tree(mi, memcg)
 			val += mem_cgroup_read_events(mi, i);
-		printk(KERN_CONT "total_%s:%llu ", mem_cgroup_events_names[i], val);
+		pr_cont("total_%s:%llu ", mem_cgroup_events_names[i], val);
 	}
 
 	for (i = 0; i < NR_LRU_LISTS; i++) {
@@ -1426,11 +1426,10 @@ static void mem_cgroup_print_oom_stat(struct mem_cgroup *memcg)
 
 		for_each_mem_cgroup_tree(mi, memcg)
 			val += mem_cgroup_nr_lru_pages(mi, BIT(i));
-		printk(KERN_CONT "total_%s:%lluKB ", mem_cgroup_lru_names[i], K(val));
+		pr_cont("total_%s:%lluKB ", mem_cgroup_lru_names[i], K(val));
 	}
 
-	printk(KERN_CONT "\n");
-
+	pr_cont("\n");
 }
 
 /**
