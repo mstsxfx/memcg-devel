@@ -472,7 +472,7 @@ void oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
 		dump_header(p, gfp_mask, order, memcg, nodemask);
 
 	task_lock(p);
-	pr_err("%s: Kill process %d (%s) score %d or sacrifice child\n",
+	pr_err("%s: Will kill process %d (%s) score %d or sacrifice child\n",
 		message, task_pid_nr(p), p->comm, points);
 	task_unlock(p);
 
@@ -509,6 +509,7 @@ void oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
 	if (!p) {
 		rcu_read_unlock();
 		put_task_struct(victim);
+		pr_err("No process has been killed!\n");
 		return;
 	} else if (victim != p) {
 		get_task_struct(p);
@@ -540,7 +541,7 @@ void oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
 				continue;
 
 			task_lock(p);	/* Protect ->comm from prctl() */
-			pr_err("Kill process %d (%s) sharing same memory\n",
+			pr_err("Killed process %d (%s) sharing same memory\n",
 				task_pid_nr(p), p->comm);
 			task_unlock(p);
 			do_send_sig_info(SIGKILL, SEND_SIG_FORCED, p, true);
