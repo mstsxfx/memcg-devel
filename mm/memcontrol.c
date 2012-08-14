@@ -1411,7 +1411,7 @@ void mem_cgroup_print_oom_info(struct mem_cgroup *memcg, struct task_struct *p)
 	}
 	rcu_read_unlock();
 
-	printk(KERN_INFO "Task in %s will be killed", memcg_name);
+	printk(KERN_INFO "Task in %s killed", memcg_name);
 
 	rcu_read_lock();
 	ret = cgroup_path(mem_cgrp, memcg_name, PATH_MAX);
