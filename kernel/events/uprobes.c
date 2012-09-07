@@ -136,7 +136,11 @@ static int __replace_page(struct vm_area_struct *vma, struct page *page, struct 
 	spinlock_t *ptl;
 	unsigned long addr;
 	int err = -EFAULT;
+	/* For mmu_notifiers */
+	const unsigned long mmun_start = addr;
+	const unsigned long mmun_end   = addr + PAGE_SIZE;
 
+	mmu_notifier_invalidate_range_start(mm, mmun_start, mmun_end);
 	addr = page_address_in_vma(page, vma);
 	if (addr == -EFAULT)
 		goto out;
@@ -177,6 +181,7 @@ static int __replace_page(struct vm_area_struct *vma, struct page *page, struct 
 	err = 0;
 
 out:
+	mmu_notifier_invalidate_range_end(mm, mmun_start, mmun_end);
 	return err;
 }
 
