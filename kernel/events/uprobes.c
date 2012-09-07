@@ -754,7 +754,6 @@ static struct vma_info *
 __find_next_vma_info(struct address_space *mapping, struct list_head *head,
 			struct vma_info *vi, loff_t offset, bool is_register)
 {
-	struct prio_tree_iter iter;
 	struct vm_area_struct *vma;
 	struct vma_info *tmpvi;
 	unsigned long pgoff;
@@ -763,7 +762,7 @@ __find_next_vma_info(struct address_space *mapping, struct list_head *head,
 
 	pgoff = offset >> PAGE_SHIFT;
 
-	vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, pgoff, pgoff) {
+	vma_interval_tree_foreach(vma, &mapping->i_mmap, pgoff, pgoff) {
 		if (!valid_vma(vma, is_register))
 			continue;
 
